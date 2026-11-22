@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090d18">
 <title>DROPZONE | Never Miss a Restock</title>
 <style>
 :root {
@@ -66,12 +67,86 @@ button{cursor:pointer}
 .modal-content input,.modal-content select{width:100%;background:#0c1422;color:white;border:1px solid var(--border);border-radius:8px;padding:13px;margin:8px 0 15px}
 .modal-content label{font-size:13px;color:#cbd5e1}
 .close{float:right;background:none;border:0;color:white;font-size:22px}
-.toast{position:fixed;bottom:22px;right:22px;background:#183d34;color:white;padding:15px 20px;border-radius:10px;display:none;z-index:20}
-@media(max-width:1000px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:650px){.sidebar{width:65px;padding:15px 7px}.logo{font-size:0;margin:10px 5px 25px}.logo span{font-size:24px}.nav-item{font-size:0;text-align:center}.nav-label{display:none}.main{padding:20px 12px}.products,.plans{grid-template-columns:1fr}.stats{gap:8px}.hero{padding:23px}}
+.toast{position:fixed;bottom:22px;right:22px;background:#183d34;color:white;padding:15px 20px;border-radius:10px;display:none;z-index:60}
+
+/* SIGNUP SCREEN */
+.signup-screen{
+ position:fixed;inset:0;z-index:50;
+ background:linear-gradient(135deg,#090d18,#172448,#241b45);
+ display:flex;align-items:center;justify-content:center;
+ padding:20px;overflow:auto;
+}
+.signup-card{
+ width:min(440px,100%);background:#111827;
+ border:1px solid #34415b;border-radius:17px;
+ padding:28px;box-shadow:0 20px 70px #0008;
+}
+.signup-logo{font-size:29px;font-weight:900;margin-bottom:7px}
+.signup-logo span{color:var(--blue)}
+.signup-card h1{font-size:25px;margin:24px 0 9px}
+.signup-card p{color:var(--muted);font-size:14px;line-height:1.6}
+.signup-card label{display:block;color:#cbd5e1;font-size:13px;margin-top:16px}
+.signup-card input{
+ width:100%;background:#0c1422;color:white;
+ border:1px solid var(--border);border-radius:8px;
+ padding:13px;margin-top:7px;
+}
+.signup-card .primary{width:100%;margin-top:20px}
+.signup-note{
+ background:#202b40;border:1px solid #3b4c6c;
+ padding:12px;border-radius:9px;color:#cbd5e1;
+ font-size:12px;line-height:1.5;margin-top:15px;
+}
+.signup-error{color:#ff9999;font-size:12px;margin-top:10px}
+@media(max-width:1000px){
+ .products{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px){
+ .sidebar{width:65px;padding:15px 7px}
+ .logo{font-size:0;margin:10px 5px 25px}
+ .logo span{font-size:24px}
+ .nav-item{font-size:0;text-align:center}
+ .nav-label{display:none}
+ .main{padding:20px 12px}
+ .products,.plans{grid-template-columns:1fr}
+ .stats{gap:8px}
+ .hero{padding:23px}
+}
 </style>
 </head>
 <body>
+
+<!-- SIGNUP -->
+<div class="signup-screen" id="signupScreen">
+ <div class="signup-card">
+  <div class="signup-logo">DROP<span>ZONE</span></div>
+  <div class="muted">NEVER MISS A RESTOCK</div>
+
+  <h1>Create your account</h1>
+  <p>Sign up to start tracking products, restocks, and price drops.</p>
+
+  <label for="signupName">Your name</label>
+  <input id="signupName" type="text" placeholder="Enter your name" maxlength="40">
+
+  <label for="signupZip">ZIP code</label>
+  <input id="signupZip" type="text" inputmode="numeric"
+   maxlength="5" placeholder="Enter your 5-digit ZIP code">
+
+  <button class="primary" onclick="completeSignup()">
+   Create Account
+  </button>
+
+  <div class="signup-error" id="signupError"></div>
+
+  <div class="signup-note">
+   This is currently a demo signup saved on this device.
+   It does not create a secure online account.
+   No phone number or SMS verification is needed.
+  </div>
+ </div>
+</div>
+
 <div class="layout">
 <aside class="sidebar">
 <div class="logo">DROP<span>ZONE</span></div>
@@ -84,9 +159,13 @@ button{cursor:pointer}
 <div class="nav-item" onclick="showPage('plans',this)">◇ Membership</div>
 <div class="nav-item" onclick="showPage('settings',this)">⚙ Settings</div>
 </aside>
+
 <main class="main">
 <header class="topbar">
-<div><h1 id="pageTitle">Dashboard</h1><p class="muted">Your products. Your prices. Your advantage.</p></div>
+<div>
+<h1 id="pageTitle">Dashboard</h1>
+<p class="muted">Your products. Your prices. Your advantage.</p>
+</div>
 <div class="status">● Demo Mode</div>
 </header>
 
@@ -96,35 +175,48 @@ button{cursor:pointer}
 <p>Never overpay again. Track products and stay ahead of price drops.</p>
 <button class="primary" onclick="openModal()">＋ Track a Product</button>
 </div>
+
 <div class="stats">
 <div class="stat"><p>Tracked Products</p><h2 id="totalProducts">0</h2></div>
 <div class="stat"><p>Restock Alerts</p><h2 id="restockCount">0</h2></div>
 <div class="stat"><p>Price Drops</p><h2 id="dropCount">0</h2></div>
 <div class="stat"><p>Membership</p><h2 style="font-size:19px" id="membership">FREE</h2></div>
 </div>
-<div class="section-heading"><h2>Your Watchlist</h2><button class="secondary" onclick="showPage('products')">View All</button></div>
+
+<div class="section-heading">
+<h2>Your Watchlist</h2>
+<button class="secondary" onclick="showPage('products')">View All</button>
+</div>
 <div class="products" id="dashboardProducts"></div>
-<div class="section-heading"><h2>Recent Notifications</h2><button class="secondary" onclick="showPage('alerts')">View All</button></div>
+
+<div class="section-heading">
+<h2>Recent Notifications</h2>
+<button class="secondary" onclick="showPage('alerts')">View All</button>
+</div>
 <div class="alert-list" id="recentAlerts"></div>
 </section>
 
 <section id="products" class="page">
-<div class="section-heading"><h2>My Tracked Products</h2><button class="primary" onclick="openModal()">＋ Add Product</button></div>
+<div class="section-heading">
+<h2>My Tracked Products</h2>
+<button class="primary" onclick="openModal()">＋ Add Product</button>
+</div>
 <div class="products" id="allProducts"></div>
 </section>
 
 <section id="alerts" class="page">
 <h2>Notification History</h2>
 <p class="muted">Updates for products you're tracking.</p>
-<div class="alert-list" id="allAlerts"></div><br>
+<div class="alert-list" id="allAlerts"></div>
+<br>
 <button class="secondary" onclick="simulateAlert()">Test a Demo Notification</button>
 </section>
 
 <section id="plans" class="page">
 <h2>Choose Your Membership</h2>
-<p class="muted">Choose the monitoring experience that works for you.</p><br>
+<p class="muted">Choose the monitoring experience that works for you.</p>
+<br>
 <div class="plans">
-
 <div class="plan">
 <h3>FREE</h3>
 <div class="plan-price">$0</div>
@@ -165,7 +257,6 @@ button{cursor:pointer}
 </p>
 <button class="primary" onclick="choosePlan('YEARLY')">Choose Yearly</button>
 </div>
-
 </div>
 </section>
 
@@ -173,13 +264,22 @@ button{cursor:pointer}
 <h2>Settings</h2>
 <div class="card">
 <h3>Account</h3>
-<p class="muted">DROPZONE demo account</p>
+<p class="muted" id="accountDetails">Demo account</p>
 <hr style="border-color:var(--border)">
 <h3>Notification Preferences</h3>
-<label><input type="checkbox" checked> Restock alerts</label><br><br>
-<label><input type="checkbox" checked> Price drop alerts</label><br><br>
-<label><input type="checkbox"> Browser notifications</label><br><br>
-<button class="secondary" onclick="requestNotifications()">Enable Browser Notifications</button>
+<label><input id="restockPref" type="checkbox" checked> Restock alerts</label><br><br>
+<label><input id="pricePref" type="checkbox" checked> Price drop alerts</label><br><br>
+<p class="muted" id="notificationStatus">Notification permission has not been checked.</p>
+<button class="secondary" onclick="requestNotifications()">Enable Phone Notifications</button>
+<br><br>
+<button class="secondary" onclick="testPhoneNotification()">Send Test Notification</button>
+<br><br>
+<button class="secondary" onclick="logout()">Log Out</button>
+<div class="signup-note">
+For iPhone: add DROPZONE to your Home Screen first.
+Web Push on iPhone requires iOS 16.4 or newer.
+Real remote notifications still need a push server.
+</div>
 </div>
 </section>
 </main>
@@ -190,140 +290,326 @@ button{cursor:pointer}
 <button class="close" onclick="closeModal()">×</button>
 <h2>Add a Product</h2>
 <p class="muted">Add something you want to keep an eye on.</p>
+
 <label>Product Name</label>
 <input id="productName" placeholder="Example: PlayStation 5">
+
 <label>Product URL (optional)</label>
 <input id="productUrl" placeholder="Paste retailer product link">
+
 <label>Retailer</label>
 <select id="retailer">
 <option>Amazon</option><option>Walmart</option><option>Target</option>
 <option>Best Buy</option><option>eBay</option><option>GameStop</option>
 <option>Nike</option><option>Other</option>
 </select>
+
 <label>Current Price (optional)</label>
 <input id="productPrice" type="number" min="0" step="0.01" placeholder="499.99">
+
 <label>Alert Type</label>
 <select id="alertType">
 <option value="BOTH">Restock and price drops</option>
 <option value="RESTOCK">Restock only</option>
 <option value="PRICE">Price drops only</option>
 </select>
+
 <label>Target Price (optional)</label>
 <input id="targetPrice" type="number" min="0" step="0.01" placeholder="Alert me below this price">
+
 <button class="primary" style="width:100%" onclick="addProduct()">Start Tracking</button>
 </div>
 </div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 let products=JSON.parse(localStorage.getItem("dz_products")||"[]");
 let alerts=JSON.parse(localStorage.getItem("dz_alerts")||"[]");
 let plan=localStorage.getItem("dz_plan")||"FREE";
+let account=JSON.parse(localStorage.getItem("dz_account")||"null");
 
 function save(){
-localStorage.setItem("dz_products",JSON.stringify(products));
-localStorage.setItem("dz_alerts",JSON.stringify(alerts));
-localStorage.setItem("dz_plan",plan);
+ localStorage.setItem("dz_products",JSON.stringify(products));
+ localStorage.setItem("dz_alerts",JSON.stringify(alerts));
+ localStorage.setItem("dz_plan",plan);
 }
-function showToast(message){
-const toast=document.getElementById("toast");
-toast.textContent=message;toast.style.display="block";
-setTimeout(()=>toast.style.display="none",3000);
-}
-function showPage(id,element){
-document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
-if(element)element.classList.add("active");
-document.getElementById("pageTitle").textContent={
-dashboard:"Dashboard",products:"My Products",alerts:"Notifications",
-plans:"Membership",settings:"Settings"
-}[id];
-render();
-}
-function openModal(){document.getElementById("productModal").style.display="flex"}
-function closeModal(){document.getElementById("productModal").style.display="none"}
 
+function showToast(message){
+ const toast=document.getElementById("toast");
+ toast.textContent=message;
+ toast.style.display="block";
+ setTimeout(()=>toast.style.display="none",3000);
+}
+
+/* SIGNUP */
+function completeSignup(){
+ const name=document.getElementById("signupName").value.trim();
+ const zip=document.getElementById("signupZip").value.trim();
+
+ if(name.length<2){
+  document.getElementById("signupError").textContent="Please enter your name.";
+  return;
+ }
+
+ if(!/^\d{5}$/.test(zip)){
+  document.getElementById("signupError").textContent="Please enter a valid 5-digit ZIP code.";
+  return;
+ }
+
+ account={name:name,zip:zip,created:new Date().toISOString()};
+
+ localStorage.setItem("dz_account",JSON.stringify(account));
+
+ document.getElementById("signupScreen").style.display="none";
+
+ updateAccount();
+ showToast("Welcome to DROPZONE, "+name+"!");
+
+ requestNotifications();
+}
+
+function updateAccount(){
+ const element=document.getElementById("accountDetails");
+
+ if(account){
+  element.textContent="Signed in as "+account.name+" · ZIP code: "+account.zip+" · Demo account";
+ }
+}
+
+function logout(){
+ localStorage.removeItem("dz_account");
+ account=null;
+ document.getElementById("signupName").value="";
+ document.getElementById("signupZip").value="";
+ document.getElementById("signupScreen").style.display="flex";
+ showToast("You have logged out.");
+}
+
+/* NAVIGATION */
+function showPage(id,element){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+
+ document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+ if(element)element.classList.add("active");
+
+ document.getElementById("pageTitle").textContent={
+  dashboard:"Dashboard",
+  products:"My Products",
+  alerts:"Notifications",
+  plans:"Membership",
+  settings:"Settings"
+ }[id];
+
+ render();
+}
+
+function openModal(){
+ document.getElementById("productModal").style.display="flex";
+}
+
+function closeModal(){
+ document.getElementById("productModal").style.display="none";
+}
+
+/* PRODUCTS */
 function addProduct(){
-const name=document.getElementById("productName").value.trim();
-const url=document.getElementById("productUrl").value.trim();
-const retailer=document.getElementById("retailer").value;
-const priceInput=document.getElementById("productPrice").value;
-const targetInput=document.getElementById("targetPrice").value;
-if(!name){showToast("Please enter a product name.");return}
-if(url&&!/^https?:\/\/.+/i.test(url)){showToast("Please enter a valid URL.");return}
-if((priceInput&&Number(priceInput)<0)||(targetInput&&Number(targetInput)<0)){showToast("Prices cannot be negative.");return}
-products.push({
-id:Date.now(),name,url,retailer,
-price:priceInput?Number(priceInput):null,
-target:targetInput?Number(targetInput):null,
-type:document.getElementById("alertType").value,
-date:new Date().toLocaleDateString()
-});
-save();
-["productName","productUrl","productPrice","targetPrice"].forEach(id=>document.getElementById(id).value="");
-closeModal();render();showToast("Product added to your watchlist!");
+ const name=document.getElementById("productName").value.trim();
+ const url=document.getElementById("productUrl").value.trim();
+ const retailer=document.getElementById("retailer").value;
+ const priceInput=document.getElementById("productPrice").value;
+ const targetInput=document.getElementById("targetPrice").value;
+
+ if(!name){
+  showToast("Please enter a product name.");
+  return;
+ }
+
+ if(url&&!/^https?:\/\/.+/i.test(url)){
+  showToast("Please enter a valid URL.");
+  return;
+ }
+
+ if((priceInput&&Number(priceInput)<0)||(targetInput&&Number(targetInput)<0)){
+  showToast("Prices cannot be negative.");
+  return;
+ }
+
+ products.push({
+  id:Date.now(),
+  name,url,retailer,
+  price:priceInput?Number(priceInput):null,
+  target:targetInput?Number(targetInput):null,
+  type:document.getElementById("alertType").value,
+  date:new Date().toLocaleDateString()
+ });
+
+ save();
+
+ ["productName","productUrl","productPrice","targetPrice"].forEach(id=>{
+  document.getElementById(id).value="";
+ });
+
+ closeModal();
+ render();
+ showToast("Product added to your watchlist!");
 }
+
 function removeProduct(id){
-products=products.filter(p=>p.id!==id);save();render();showToast("Product removed.");
+ products=products.filter(p=>p.id!==id);
+ save();
+ render();
+ showToast("Product removed.");
 }
+
 function choosePlan(selected){
-if(selected!=="FREE"){
-showToast("Demo only: Payments are not connected yet.");
-return;
+ if(selected!=="FREE"){
+  showToast("Payments are not connected yet. No charge has been made.");
+  return;
+ }
+
+ plan=selected;
+ save();
+ render();
+ showToast("Free plan selected.");
 }
-plan=selected;save();render();showToast("Free plan selected.");
-}
+
+/* DISPLAY */
 function escapeHTML(value){
-return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ return String(value??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
 }
+
 function createProductCard(p){
-return `<div class="product">
-<div class="product-top"><div class="product-icon">📦</div><span class="tag">TRACKING</span></div>
-<h3>${escapeHTML(p.name)}</h3>
-<div class="muted">${escapeHTML(p.retailer)}</div>
-<div class="price">${p.price!==null?"$"+p.price.toFixed(2):"Price unknown"}</div>
-<div class="muted">Target: ${p.target!==null?"$"+p.target.toFixed(2):"Not set"}</div>
-<div class="muted">Alerts: ${p.type}</div>
-<p class="muted">Added ${p.date}</p>
-<button class="remove" onclick="removeProduct(${p.id})">Remove Product</button>
-</div>`;
+ return `<div class="product">
+ <div class="product-top">
+ <div class="product-icon">📦</div>
+ <span class="tag">TRACKING</span>
+ </div>
+ <h3>${escapeHTML(p.name)}</h3>
+ <div class="muted">${escapeHTML(p.retailer)}</div>
+ <div class="price">${p.price!==null?"$"+p.price.toFixed(2):"Price unknown"}</div>
+ <div class="muted">Target: ${p.target!==null?"$"+p.target.toFixed(2):"Not set"}</div>
+ <div class="muted">Alerts: ${escapeHTML(p.type)}</div>
+ <p class="muted">Added ${escapeHTML(p.date)}</p>
+ <button class="remove" onclick="removeProduct(${p.id})">Remove Product</button>
+ </div>`;
 }
+
 function createAlertCard(a){
-return `<div class="alert"><div class="alert-icon">${a.type==="RESTOCK"?"📦":"💸"}</div>
-<div><strong>${escapeHTML(a.title)}</strong><p>${escapeHTML(a.message)} · ${escapeHTML(a.time)}</p></div></div>`;
+ return `<div class="alert">
+ <div class="alert-icon">${a.type==="RESTOCK"?"📦":a.type==="PRICE"?"💸":"🔔"}</div>
+ <div><strong>${escapeHTML(a.title)}</strong>
+ <p>${escapeHTML(a.message)} · ${escapeHTML(a.time)}</p></div>
+ </div>`;
 }
+
 function render(){
-document.getElementById("totalProducts").textContent=products.length;
-document.getElementById("restockCount").textContent=alerts.filter(a=>a.type==="RESTOCK").length;
-document.getElementById("dropCount").textContent=alerts.filter(a=>a.type==="PRICE").length;
-document.getElementById("membership").textContent=plan;
-document.getElementById("dashboardProducts").innerHTML=products.slice(0,3).map(createProductCard).join("")||'<p class="muted">No products yet. Add your first product!</p>';
-document.getElementById("allProducts").innerHTML=products.map(createProductCard).join("")||'<p class="muted">Your watchlist is empty.</p>';
-document.getElementById("recentAlerts").innerHTML=alerts.slice(0,3).map(createAlertCard).join("")||'<p class="muted">No notifications yet.</p>';
-document.getElementById("allAlerts").innerHTML=alerts.map(createAlertCard).join("")||'<p class="muted">No notifications yet.</p>';
+ document.getElementById("totalProducts").textContent=products.length;
+ document.getElementById("restockCount").textContent=alerts.filter(a=>a.type==="RESTOCK").length;
+ document.getElementById("dropCount").textContent=alerts.filter(a=>a.type==="PRICE").length;
+ document.getElementById("membership").textContent=plan;
+
+ document.getElementById("dashboardProducts").innerHTML=
+  products.slice(0,3).map(createProductCard).join("")||
+  '<p class="muted">No products yet. Add your first product!</p>';
+
+ document.getElementById("allProducts").innerHTML=
+  products.map(createProductCard).join("")||
+  '<p class="muted">Your watchlist is empty.</p>';
+
+ document.getElementById("recentAlerts").innerHTML=
+  alerts.slice(0,3).map(createAlertCard).join("")||
+  '<p class="muted">No notifications yet.</p>';
+
+ document.getElementById("allAlerts").innerHTML=
+  alerts.map(createAlertCard).join("")||
+  '<p class="muted">No notifications yet.</p>';
 }
+
+/* DEMO ALERTS */
 function simulateAlert(){
-if(!products.length){showToast("Add a product before testing alerts.");return}
-const p=products[Math.floor(Math.random()*products.length)];
-const type=Math.random()>.5?"RESTOCK":"PRICE";
-const alert={
-type,title:type==="RESTOCK"?"Restock detected (DEMO)":"Price drop detected (DEMO)",
-message:p.name+" at "+p.retailer,time:new Date().toLocaleTimeString()
-};
-alerts.unshift(alert);save();render();showToast("Demo notification created!");sendBrowserNotification(alert);
+ if(!products.length){
+  showToast("Add a product before testing alerts.");
+  return;
+ }
+
+ const p=products[Math.floor(Math.random()*products.length)];
+ const type=Math.random()>.5?"RESTOCK":"PRICE";
+
+ const alert={
+  type,
+  title:type==="RESTOCK"?"Restock detected (DEMO)":"Price drop detected (DEMO)",
+  message:p.name+" at "+p.retailer,
+  time:new Date().toLocaleTimeString()
+ };
+
+ alerts.unshift(alert);
+ save();
+ render();
+ showToast("Demo notification created!");
+ sendBrowserNotification(alert);
 }
+
+/* DEVICE NOTIFICATIONS */
 async function requestNotifications(){
-if(!("Notification"in window)){showToast("Browser notifications not supported.");return}
-const permission=await Notification.requestPermission();
-showToast(permission==="granted"?"Browser notifications enabled.":"Permission not granted.");
+ if(!("Notification"in window)){
+  showToast("This browser does not support notifications.");
+  return;
+ }
+
+ if(!window.isSecureContext){
+  showToast("Notifications require the secure HTTPS website.");
+  return;
+ }
+
+ const permission=await Notification.requestPermission();
+
+ document.getElementById("notificationStatus").textContent=
+  "Notification permission: "+permission;
+
+ if(permission==="granted"){
+  showToast("Notification permission enabled on this device!");
+ }else{
+  showToast("Notification permission was not granted.");
+ }
 }
+
 function sendBrowserNotification(alert){
-if("Notification"in window&&Notification.permission==="granted"){
-new Notification(alert.title,{body:alert.message});
+ if("Notification"in window&&Notification.permission==="granted"){
+  new Notification(alert.title,{body:alert.message});
+ }
 }
+
+function testPhoneNotification(){
+ if(!("Notification"in window)){
+  showToast("Notifications are not supported here.");
+  return;
+ }
+
+ if(Notification.permission==="granted"){
+  const alert={
+   title:"DROPZONE test notification",
+   message:"Your device notification permission is working."
+  };
+  sendBrowserNotification(alert);
+  showToast("Test notification sent!");
+ }else{
+  requestNotifications();
+ }
 }
+
+/* STARTUP */
+updateAccount();
 render();
+
+if(!account){
+ document.getElementById("signupScreen").style.display="flex";
+}else{
+ document.getElementById("signupScreen").style.display="none";
+}
 </script>
 </body>
 </html>
