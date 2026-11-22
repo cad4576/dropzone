@@ -1,1 +1,329 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DROPZONE | Never Miss a Restock</title>
+<style>
+:root {
+  --bg:#090d18;--panel:#111827;--panel2:#182235;
+  --text:#f8fafc;--muted:#94a3b8;--blue:#5577ff;
+  --green:#26d99b;--border:#263248;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:245px;background:#0e1524;border-right:1px solid var(--border);padding:28px 18px;flex-shrink:0}
+.logo{font-size:25px;font-weight:900;margin:5px 10px 35px}
+.logo span{color:var(--blue)}
+.nav-label{color:var(--muted);font-size:11px;letter-spacing:2px;margin:25px 10px 12px}
+.nav-item{padding:13px;border-radius:9px;color:#b6c2d6;cursor:pointer;margin-bottom:5px}
+.nav-item:hover,.nav-item.active{background:#202e49;color:white}
+.main{flex:1;min-width:0;padding:30px 4%}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:35px}
+.topbar h1{font-size:25px;margin:0}
+.status{color:var(--green);background:#103329;padding:9px 13px;border-radius:20px;font-size:12px}
+.hero{background:linear-gradient(115deg,#172c56,#20214b,#30245b);padding:32px;border-radius:17px;margin-bottom:27px}
+.hero h2{font-size:clamp(25px,4vw,37px);margin:0 0 12px}
+.hero p{color:#c4d0e8}
+.primary{background:var(--blue);color:white;border:0;padding:12px 19px;border-radius:9px;font-weight:bold}
+.primary:hover{background:#7690ff}
+.secondary{background:var(--panel2);color:white;border:1px solid var(--border);padding:11px 16px;border-radius:9px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:30px}
+.stat,.card{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:20px}
+.stat p{color:var(--muted);font-size:13px}
+.stat h2{margin:10px 0 0;font-size:28px}
+.section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:30px 0 17px}
+.section-heading h2{font-size:20px}
+.products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.product{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:18px}
+.product-top{display:flex;justify-content:space-between;align-items:center}
+.product-icon{width:48px;height:48px;background:var(--panel2);border-radius:12px;display:grid;place-items:center;font-size:25px}
+.product h3{margin:17px 0 7px;font-size:16px}
+.muted{color:var(--muted);font-size:13px}
+.price{font-size:23px;font-weight:800;margin:15px 0}
+.tag{display:inline-block;padding:6px 9px;background:#123b31;color:var(--green);border-radius:6px;font-size:11px}
+.remove{color:#ff8080;background:transparent;border:0;padding:8px 0;font-size:12px}
+.alert-list{display:grid;gap:10px}
+.alert{background:var(--panel);border:1px solid var(--border);padding:16px;border-radius:10px;display:flex;gap:13px;align-items:center}
+.alert-icon{font-size:23px}
+.alert strong{font-size:14px}
+.alert p{color:var(--muted);font-size:12px;margin:5px 0 0}
+.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.plan{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:20px}
+.plan.featured{border:2px solid var(--blue)}
+.plan h3{font-size:15px}
+.plan-price{font-size:29px;font-weight:900}
+.plan p{color:var(--muted);font-size:13px;line-height:1.9}
+.plan button{width:100%;margin-top:10px}
+.page{display:none}
+.page.active{display:block}
+.modal{display:none;position:fixed;inset:0;background:#000b;align-items:center;justify-content:center;padding:20px;z-index:10}
+.modal-content{background:#141e30;border:1px solid var(--border);padding:27px;border-radius:15px;width:min(430px,100%)}
+.modal-content input,.modal-content select{width:100%;background:#0c1422;color:white;border:1px solid var(--border);border-radius:8px;padding:13px;margin:8px 0 15px}
+.modal-content label{font-size:13px;color:#cbd5e1}
+.close{float:right;background:none;border:0;color:white;font-size:22px}
+.toast{position:fixed;bottom:22px;right:22px;background:#183d34;color:white;padding:15px 20px;border-radius:10px;display:none;z-index:20}
+@media(max-width:1000px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.sidebar{width:65px;padding:15px 7px}.logo{font-size:0;margin:10px 5px 25px}.logo span{font-size:24px}.nav-item{font-size:0;text-align:center}.nav-label{display:none}.main{padding:20px 12px}.products,.plans{grid-template-columns:1fr}.stats{gap:8px}.hero{padding:23px}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+<div class="logo">DROP<span>ZONE</span></div>
+<div class="nav-label">MENU</div>
+<div class="nav-item active" onclick="showPage('dashboard',this)">⌂ Dashboard</div>
+<div class="nav-item" onclick="showPage('products',this)">▣ My Products</div>
+<div class="nav-item" onclick="openModal()">＋ Add Product</div>
+<div class="nav-item" onclick="showPage('alerts',this)">♧ Alerts</div>
+<div class="nav-label">ACCOUNT</div>
+<div class="nav-item" onclick="showPage('plans',this)">◇ Membership</div>
+<div class="nav-item" onclick="showPage('settings',this)">⚙ Settings</div>
+</aside>
+<main class="main">
+<header class="topbar">
+<div><h1 id="pageTitle">Dashboard</h1><p class="muted">Your products. Your prices. Your advantage.</p></div>
+<div class="status">● Demo Mode</div>
+</header>
+
+<section id="dashboard" class="page active">
+<div class="hero">
+<h2>Never Miss a Restock.</h2>
+<p>Never overpay again. Track products and stay ahead of price drops.</p>
+<button class="primary" onclick="openModal()">＋ Track a Product</button>
+</div>
+<div class="stats">
+<div class="stat"><p>Tracked Products</p><h2 id="totalProducts">0</h2></div>
+<div class="stat"><p>Restock Alerts</p><h2 id="restockCount">0</h2></div>
+<div class="stat"><p>Price Drops</p><h2 id="dropCount">0</h2></div>
+<div class="stat"><p>Membership</p><h2 style="font-size:19px" id="membership">FREE</h2></div>
+</div>
+<div class="section-heading"><h2>Your Watchlist</h2><button class="secondary" onclick="showPage('products')">View All</button></div>
+<div class="products" id="dashboardProducts"></div>
+<div class="section-heading"><h2>Recent Notifications</h2><button class="secondary" onclick="showPage('alerts')">View All</button></div>
+<div class="alert-list" id="recentAlerts"></div>
+</section>
+
+<section id="products" class="page">
+<div class="section-heading"><h2>My Tracked Products</h2><button class="primary" onclick="openModal()">＋ Add Product</button></div>
+<div class="products" id="allProducts"></div>
+</section>
+
+<section id="alerts" class="page">
+<h2>Notification History</h2>
+<p class="muted">Updates for products you're tracking.</p>
+<div class="alert-list" id="allAlerts"></div><br>
+<button class="secondary" onclick="simulateAlert()">Test a Demo Notification</button>
+</section>
+
+<section id="plans" class="page">
+<h2>Choose Your Membership</h2>
+<p class="muted">Choose the monitoring experience that works for you.</p><br>
+<div class="plans">
+
+<div class="plan">
+<h3>FREE</h3>
+<div class="plan-price">$0</div>
+<p>
+• Updates up to 12 hours<br>
+• Limited tracked products<br>
+• Select retailers<br>
+• Basic alerts
+</p>
+<button class="secondary" onclick="choosePlan('FREE')">Select Free</button>
+</div>
+
+<div class="plan">
+<h3>MONTHLY PREMIUM</h3>
+<div class="plan-price">$4.99</div>
+<p>
+• Per month<br>
+• Target under 30-second alerts<br>
+• Expanded product tracking<br>
+• Restock notifications<br>
+• Price drop notifications<br>
+• More retailer coverage
+</p>
+<button class="primary" onclick="choosePlan('MONTHLY')">Choose Monthly</button>
+</div>
+
+<div class="plan featured">
+<h3>YEARLY PREMIUM ⭐</h3>
+<div class="plan-price">$16.99</div>
+<p>
+• Per year<br>
+• Target under 30-second alerts<br>
+• Expanded product tracking<br>
+• Restock notifications<br>
+• Price drop notifications<br>
+• More retailer coverage<br>
+• Best value
+</p>
+<button class="primary" onclick="choosePlan('YEARLY')">Choose Yearly</button>
+</div>
+
+</div>
+</section>
+
+<section id="settings" class="page">
+<h2>Settings</h2>
+<div class="card">
+<h3>Account</h3>
+<p class="muted">DROPZONE demo account</p>
+<hr style="border-color:var(--border)">
+<h3>Notification Preferences</h3>
+<label><input type="checkbox" checked> Restock alerts</label><br><br>
+<label><input type="checkbox" checked> Price drop alerts</label><br><br>
+<label><input type="checkbox"> Browser notifications</label><br><br>
+<button class="secondary" onclick="requestNotifications()">Enable Browser Notifications</button>
+</div>
+</section>
+</main>
+</div>
+
+<div class="modal" id="productModal">
+<div class="modal-content">
+<button class="close" onclick="closeModal()">×</button>
+<h2>Add a Product</h2>
+<p class="muted">Add something you want to keep an eye on.</p>
+<label>Product Name</label>
+<input id="productName" placeholder="Example: PlayStation 5">
+<label>Product URL (optional)</label>
+<input id="productUrl" placeholder="Paste retailer product link">
+<label>Retailer</label>
+<select id="retailer">
+<option>Amazon</option><option>Walmart</option><option>Target</option>
+<option>Best Buy</option><option>eBay</option><option>GameStop</option>
+<option>Nike</option><option>Other</option>
+</select>
+<label>Current Price (optional)</label>
+<input id="productPrice" type="number" min="0" step="0.01" placeholder="499.99">
+<label>Alert Type</label>
+<select id="alertType">
+<option value="BOTH">Restock and price drops</option>
+<option value="RESTOCK">Restock only</option>
+<option value="PRICE">Price drops only</option>
+</select>
+<label>Target Price (optional)</label>
+<input id="targetPrice" type="number" min="0" step="0.01" placeholder="Alert me below this price">
+<button class="primary" style="width:100%" onclick="addProduct()">Start Tracking</button>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let products=JSON.parse(localStorage.getItem("dz_products")||"[]");
+let alerts=JSON.parse(localStorage.getItem("dz_alerts")||"[]");
+let plan=localStorage.getItem("dz_plan")||"FREE";
+
+function save(){
+localStorage.setItem("dz_products",JSON.stringify(products));
+localStorage.setItem("dz_alerts",JSON.stringify(alerts));
+localStorage.setItem("dz_plan",plan);
+}
+function showToast(message){
+const toast=document.getElementById("toast");
+toast.textContent=message;toast.style.display="block";
+setTimeout(()=>toast.style.display="none",3000);
+}
+function showPage(id,element){
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+if(element)element.classList.add("active");
+document.getElementById("pageTitle").textContent={
+dashboard:"Dashboard",products:"My Products",alerts:"Notifications",
+plans:"Membership",settings:"Settings"
+}[id];
+render();
+}
+function openModal(){document.getElementById("productModal").style.display="flex"}
+function closeModal(){document.getElementById("productModal").style.display="none"}
+
+function addProduct(){
+const name=document.getElementById("productName").value.trim();
+const url=document.getElementById("productUrl").value.trim();
+const retailer=document.getElementById("retailer").value;
+const priceInput=document.getElementById("productPrice").value;
+const targetInput=document.getElementById("targetPrice").value;
+if(!name){showToast("Please enter a product name.");return}
+if(url&&!/^https?:\/\/.+/i.test(url)){showToast("Please enter a valid URL.");return}
+if((priceInput&&Number(priceInput)<0)||(targetInput&&Number(targetInput)<0)){showToast("Prices cannot be negative.");return}
+products.push({
+id:Date.now(),name,url,retailer,
+price:priceInput?Number(priceInput):null,
+target:targetInput?Number(targetInput):null,
+type:document.getElementById("alertType").value,
+date:new Date().toLocaleDateString()
+});
+save();
+["productName","productUrl","productPrice","targetPrice"].forEach(id=>document.getElementById(id).value="");
+closeModal();render();showToast("Product added to your watchlist!");
+}
+function removeProduct(id){
+products=products.filter(p=>p.id!==id);save();render();showToast("Product removed.");
+}
+function choosePlan(selected){
+if(selected!=="FREE"){
+showToast("Demo only: Payments are not connected yet.");
+return;
+}
+plan=selected;save();render();showToast("Free plan selected.");
+}
+function escapeHTML(value){
+return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function createProductCard(p){
+return `<div class="product">
+<div class="product-top"><div class="product-icon">📦</div><span class="tag">TRACKING</span></div>
+<h3>${escapeHTML(p.name)}</h3>
+<div class="muted">${escapeHTML(p.retailer)}</div>
+<div class="price">${p.price!==null?"$"+p.price.toFixed(2):"Price unknown"}</div>
+<div class="muted">Target: ${p.target!==null?"$"+p.target.toFixed(2):"Not set"}</div>
+<div class="muted">Alerts: ${p.type}</div>
+<p class="muted">Added ${p.date}</p>
+<button class="remove" onclick="removeProduct(${p.id})">Remove Product</button>
+</div>`;
+}
+function createAlertCard(a){
+return `<div class="alert"><div class="alert-icon">${a.type==="RESTOCK"?"📦":"💸"}</div>
+<div><strong>${escapeHTML(a.title)}</strong><p>${escapeHTML(a.message)} · ${escapeHTML(a.time)}</p></div></div>`;
+}
+function render(){
+document.getElementById("totalProducts").textContent=products.length;
+document.getElementById("restockCount").textContent=alerts.filter(a=>a.type==="RESTOCK").length;
+document.getElementById("dropCount").textContent=alerts.filter(a=>a.type==="PRICE").length;
+document.getElementById("membership").textContent=plan;
+document.getElementById("dashboardProducts").innerHTML=products.slice(0,3).map(createProductCard).join("")||'<p class="muted">No products yet. Add your first product!</p>';
+document.getElementById("allProducts").innerHTML=products.map(createProductCard).join("")||'<p class="muted">Your watchlist is empty.</p>';
+document.getElementById("recentAlerts").innerHTML=alerts.slice(0,3).map(createAlertCard).join("")||'<p class="muted">No notifications yet.</p>';
+document.getElementById("allAlerts").innerHTML=alerts.map(createAlertCard).join("")||'<p class="muted">No notifications yet.</p>';
+}
+function simulateAlert(){
+if(!products.length){showToast("Add a product before testing alerts.");return}
+const p=products[Math.floor(Math.random()*products.length)];
+const type=Math.random()>.5?"RESTOCK":"PRICE";
+const alert={
+type,title:type==="RESTOCK"?"Restock detected (DEMO)":"Price drop detected (DEMO)",
+message:p.name+" at "+p.retailer,time:new Date().toLocaleTimeString()
+};
+alerts.unshift(alert);save();render();showToast("Demo notification created!");sendBrowserNotification(alert);
+}
+async function requestNotifications(){
+if(!("Notification"in window)){showToast("Browser notifications not supported.");return}
+const permission=await Notification.requestPermission();
+showToast(permission==="granted"?"Browser notifications enabled.":"Permission not granted.");
+}
+function sendBrowserNotification(alert){
+if("Notification"in window&&Notification.permission==="granted"){
+new Notification(alert.title,{body:alert.message});
+}
+}
+render();
+</script>
+</body>
+</html>
